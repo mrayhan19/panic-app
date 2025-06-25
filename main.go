@@ -5,9 +5,13 @@ import (
 	"net/http"
 )
 
+type User struct {
+	Name string
+}Add commentMore actions
+
 func panicHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Triggering panic...")
-	panic("🔥 intentional crash")
+	var u *User
+	fmt.Fprintf(w, "User: %s", u.Name) // Ini akan panic karena u == nil
 }
 
 func healthHandler(w http.ResponseWriter, r *http.Request) {
