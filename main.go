@@ -3,28 +3,20 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"os"
+	"time"
 )
 
-// handler yang akan menyebabkan panic fatal dan menghentikan container
+// Panic akan dipicu dari goroutine utama agar stack trace terlihat di stdout
+func panicSoon() {
+	time.Sleep(1 * time.Second)
+	panic("🔥 intentional panic: this should crash the container and show in logs")
+}
+
 func panicHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Triggering panic...")
+	fmt.Fprintln(w, "Panic will happen in 1 second... check logs")
 
-	// Force exit secara eksplisit setelah panic
-	go func() {
-		panic("intentional crash from /panic")
-	}()
-
-	// Beri waktu agar panic di goroutine sempat terjadi
-	// atau langsung exit secara paksa agar container mati
-	go func() {
-		// Tunggu 100ms lalu exit paksa (fallback jika panic tidak mematikan proses utama)
-		// Karena panic dalam goroutine tidak mematikan main goroutine
-		select {}
-	}()
-
-	// Langsung keluar agar container berhenti
-	os.Exit(1)
+	// Panic terjadi dari goroutine utama agar bisa crash dan terlihat
+	go panicSoon()
 }
 
 func healthHandler(w http.ResponseWriter, r *http.Request) {
@@ -35,6 +27,15 @@ func main() {
 	http.HandleFunc("/panic", panicHandler)
 	http.HandleFunc("/healthz", healthHandler)
 
-	fmt.Println("Server running on :8080")
-	http.ListenAndServe(":8080", nil)
+	fmt.Println("🌐 Server running on :8080")
+
+	// Jalankan HTTP server dalam goroutine terpisah
+	go func() {
+		if err := http.ListenAndServe(":8080", nil); err != nil {
+			panic(fmt.Sprintf("server error: %v", err))
+		}
+	}()
+
+	// Blok agar main() tetap hidup sampai goroutine panic jalan
+	select {}
 }
