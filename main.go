@@ -10,8 +10,8 @@ type User struct {
 }
 
 func panicHandler(w http.ResponseWriter, r *http.Request) {
-	var u *User
-	fmt.Fprintf(w, "User: %s", u.Name) // Ini akan panic karena u == nil
+	var u *User                        // nil pointer
+	fmt.Fprintf(w, "User: %s", u.Name) // ini akan panic: dereference nil pointer
 }
 
 func healthHandler(w http.ResponseWriter, r *http.Request) {
@@ -20,7 +20,7 @@ func healthHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	http.HandleFunc("/panic", panicHandler)
-	http.HandleFunc("/healthz", healthHandler)
+	http.HandleFunc("/health", healthHandler)
 
 	fmt.Println("Server running on :8080")
 	http.ListenAndServe(":8080", nil)
