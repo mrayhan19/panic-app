@@ -4,7 +4,8 @@ WORKDIR /app
 
 COPY . .
 
-RUN go build -o panic-app .
+RUN go mod init panic-app \
+ && go build -o panic-app .
 
 EXPOSE 8080
 
