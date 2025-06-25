@@ -7,7 +7,7 @@ import (
 
 type User struct {
 	Name string
-}Add commentMore actions
+}
 
 func panicHandler(w http.ResponseWriter, r *http.Request) {
 	var u *User
